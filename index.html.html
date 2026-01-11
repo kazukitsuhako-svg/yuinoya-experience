@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selected Tokyo Experiences</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts: Noto Sans JP & Serif -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#9e0e22', // Deep Japanese Red (Main)
+                            darkRed: '#5e0814', // Darker Red for Gradient
+                            gold: '#bf9b30', // Champagne Gold (Classic)
+                            brightGold: '#FFD700', // Bright Gold for accents
+                            lightGold: '#f3e5ab',
+                            dark: '#1a1a1a',
+                            cream: '#fcfaf2',
+                            white: '#ffffff',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans JP"', 'sans-serif'],
+                        serif: ['"Noto Serif JP"', 'serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1.2s ease-out',
+                        'slide-up': 'slideUp 1s ease-out',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    },
+                    backgroundImage: {
+                        'luxury-gradient': 'linear-gradient(135deg, rgba(158,14,34,0.95) 0%, rgba(60,5,15,0.98) 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bf9b30; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9e0e22; 
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(191, 155, 48, 0.2);
+        }
+
+        /* Hero Background - Image with Overlay */
+        .hero-section {
+            position: relative;
+            /* 画像を指定 */
+            background-image: url('https://i.imgur.com/zTQZJNF.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
+        }
+
+        /* 画像を少し暗くして文字を見やすくするオーバーレイ */
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4); /* 暗さの調整 */
+            z-index: 0;
+        }
+        
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* ゴールドの粒子をイメージした微細なパターン */
+            background-image: radial-gradient(rgba(191, 155, 48, 0.4) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.2;
+            z-index: 1; /* オーバーレイより上 */
+        }
+
+        /* 文字の可読性を上げるためのシャドウ */
+        .text-shadow-hero {
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-brand-cream text-brand-dark antialiased selection:bg-brand-gold selection:text-white">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- Data Definitions ---
+
+        const TRANSLATIONS = {
+            ja: {
+                mainCopy: "東京の素晴らしい体験を、\nあなたの大切な家族とともに。",
+                subCopy: "私が自信を持っておすすめする体験サービスです。\n興味のある体験があれば、各サービス詳細より問い合わせをお願いします。",
+                viewDetails: "詳細を見る",
+                close: "閉じる",
+                inquiry: "お問い合わせ",
+                basicInfo: "基本情報",
+                courses: "コース一覧",
+                copy: "コピー",
+                copied: "コピーしました！",
+                email: "宛先メールアドレス",
+                subject: "件名",
+                body: "お問い合わせ内容",
+                selectCourse: "コースを選択してください",
+                requiredTime: "所要時間",
+                price: "金額",
+                payment: "お支払い方法",
+                flow: "体験の流れ",
+                notes: "注意事項",
+                copyInstruction: "各項目の「コピー」ボタンを押して、ご利用のメールソフトに貼り付けてください。",
+                person: "名",
+                yen: "円",
+                inquiryTemplate: `代表者の名前：
+代表者の電話番号：
+希望コース：{{courseName}}
+参加人数：大人○名、子供○名
+体験サービスの希望日時①:○月○日00:00～
+体験サービスの希望日時②:○月○日00:00～
+体験サービスの希望日時③:○月○日00:00～
+※ご要望にお応えできない場合は別日でご提案させていただく場合もあるので予めご了承ください。
+その他ご要望:`
+            },
+            en: {
+                mainCopy: "Exquisite Tokyo Experiences\nfor You and Your Family.",
+                subCopy: "These are experiences I confidently recommend.\nPlease inquire via the details if you are interested.",
+                viewDetails: "View Details",
+                close: "Close",
+                inquiry: "Inquiry",
+                basicInfo: "Basic Info",
+                courses: "Courses",
+                copy: "Copy",
+                copied: "Copied!",
+                email: "To Email",
+                subject: "Subject",
+                body: "Inquiry Body",
+                selectCourse: "Please select a course",
+                requiredTime: "Duration",
+                price: "Price",
+                payment: "Payment",
+                flow: "Flow",
+                notes: "Notes",
+                copyInstruction: "Please click the 'Copy' button and paste into your email client.",
+                person: " person(s)",
+                yen: " JPY",
+                inquiryTemplate: `Representative Name:
+Phone Number:
+Preferred Course: {{courseName}}
+Number of Participants: Adults [ ], Children [ ]
+Preferred Date 1: MM/DD HH:MM
+Preferred Date 2: MM/DD HH:MM
+Preferred Date 3: MM/DD HH:MM
+*Please note that we may suggest alternative dates if your preferred dates are unavailable.
+Other Requests:`
+            },
+            zh: {
+                mainCopy: "为您和家人\n精心挑选的东京体验。",
+                subCopy: "这些是我自信推荐的体验服务。\n如果您感兴趣，请通过详情进行咨询。",
+                viewDetails: "查看详情",
+                close: "关闭",
+                inquiry: "咨询",
+                basicInfo: "基本信息",
+                courses: "课程列表",
+                copy: "复制",
+                copied: "已复制！",
+                email: "收件人邮箱",
+                subject: "邮件标题",
+                body: "咨询内容",
+                selectCourse: "请选择课程",
+                requiredTime: "所需时间",
+                price: "金额",
+                payment: "支付方式",
+                flow: "体验流程",
+                notes: "注意事项",
+                copyInstruction: "请点击“复制”按钮并粘贴到您的邮件软件中。",
+                person: " 名",
+                yen: " 日元",
+                inquiryTemplate: `代表姓名：
+电话号码：
+希望课程：{{courseName}}
+参加人数：成人[ ]名，儿童[ ]名
+希望日期①：MM月DD日 HH:MM
+希望日期②：MM月DD日 HH:MM
+希望日期③：MM月DD日 HH:MM
+※如果无法满足您的要求，可能会建议其他日期，敬请谅解。
+其他要求：`
+            },
+            ko: {
+                mainCopy: "엄선된 도쿄의 체험을\n소중한 가족과 함께.",
+                subCopy: "자신 있게 추천하는 체험 서비스입니다.\n관심 있는 체험이 있다면 상세 페이지에서 문의해 주세요.",
+                viewDetails: "상세 보기",
+                close: "닫기",
+                inquiry: "문의하기",
+                basicInfo: "기본 정보",
+                courses: "코스 목록",
+                copy: "복사",
+                copied: "복사됨!",
+                email: "받는 사람 이메일",
+                subject: "제목",
+                body: "문의 내용",
+                selectCourse: "코스를 선택해주세요",
+                requiredTime: "소요 시간",
+                price: "금액",
+                payment: "결제 방법",
+                flow: "체험 흐름",
+                notes: "주의 사항",
+                copyInstruction: "각 항목의 '복사' 버튼을 눌러 이용하시는 메일 소프트웨어에 붙여넣기 해주세요.",
+                person: " 명",
+                yen: " 엔",
+                inquiryTemplate: `대표자 성함:
+전화번호:
+희망 코스: {{courseName}}
+참가 인원: 성인 [ ]명, 아동 [ ]명
+희망 일시①: MM월 DD일 HH:MM
+희망 일시②: MM월 DD일 HH:MM
+희망 일시③: MM월 DD일 HH:MM
+※요청하신 일시에 예약이 어려운 경우 다른 날짜를 제안드릴 수 있는 점 양해 부탁드립니다.
+기타 요청사항:`
+            }
+        };
+
+        const SERVICES_DATA = [
+            {
+                id: 1,
+                image: "https://i.imgur.com/35rJsX8.jpeg",
+                companyName: { ja: "リッツ食品", en: "Ritz Foods", zh: "Ritz 食品", ko: "리츠 식품" },
+                email: "rizs_yuinoya@aaa.xxx.com",
+                label: { ja: "食", en: "Food", zh: "美食", ko: "음식" },
+                serviceName: {
+                    ja: "四季の移ろいを感じる上生菓子づくり",
+                    en: "Japanese Sweets Making: Feeling the Four Seasons",
+                    zh: "感受四季变迁的上生果子制作",
+                    ko: "사계절의 변화를 느끼는 상생과자 만들기"
+                },
+                appeal: {
+                    ja: "鎌倉・長谷を拠点に創作和菓子の魅力を伝える「手毬」の講師に教わる和菓子レッスン。和菓子の技法や素材について学び、四季折々の風物をかたどった美しい上生菓子をつくります。様々なモチーフに触れ、季節感を大切にした和菓子づくりの奥深さを体感。レッスン後は、つくりたての和菓子を味わいましょう。",
+                    en: "A wagashi lesson taught by an instructor from 'Temari', conveying the charm of creative Japanese sweets. Learn techniques and ingredients, and create beautiful sweets shaped like seasonal features. Experience the depth of making sweets that cherish the sense of the season. After the lesson, taste your freshly made sweets.",
+                    zh: "由镰仓·长谷的创作和果子讲师指导的和果子课程。学习和果子的技法和素材，制作体现四季风物的美丽上生果子。接触各种图案，体验重视季节感的和果子制作的深奥之处。课程结束后，品尝刚做好的和果子吧。",
+                    ko: "가마쿠라·하세 거점의 창작 화과자 강사에게 배우는 화과자 레슨. 기법과 소재를 배우고 사계절의 풍물을 본뜬 아름다운 상생과자를 만듭니다. 다양한 모티브를 접하며 계절감을 중시한 화과자 만들기의 깊이를 체험. 레슨 후에는 갓 만든 화과자를 맛봅시다."
+                },
+                courses: [
+                    {
+                        id: "A",
+                        name: { ja: "Aコース（お菓子作りA）", en: "Course A (Sweets Making A)", zh: "A套餐（点心制作A）", ko: "A코스 (과자 만들기 A)" },
+                        desc: { ja: "お菓子作りAを体験できます。", en: "Experience Sweets Making A.", zh: "体验点心制作A。", ko: "과자 만들기 A를 체험할 수 있습니다." },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 6600,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.Aコース.体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Course A Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.A套餐体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.A코스 체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    },
+                    {
+                        id: "B",
+                        name: { ja: "Bコース（お菓子作りB）", en: "Course B (Sweets Making B)", zh: "B套餐（点心制作B）", ko: "B코스 (과자 만들기 B)" },
+                        desc: { ja: "お菓子作りBを体験できます。", en: "Experience Sweets Making B.", zh: "体验点心制作B。", ko: "과자 만들기 B를 체험할 수 있습니다." },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 10000,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.Bコース体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Course B Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.B套餐体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.B코스 체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명まで" }
+                    },
+                    {
+                        id: "C",
+                        name: { ja: "Cコース（お菓子作りC）", en: "Course C (Sweets Making C)", zh: "C套餐（点心制作C）", ko: "C코스 (과자 만들기 C)" },
+                        desc: { ja: "お菓子作りCを体験できます。", en: "Experience Sweets Making C.", zh: "体验点心制作C。", ko: "과자 만들기 C를 체험할 수 있습니다." },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 15000,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.Cコース体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Course C Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.C套餐体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.C코스 체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    }
+                ]
+            },
+            {
+                id: 2,
+                image: "https://i.imgur.com/YAGKGup.jpeg",
+                companyName: { ja: "リッツ瓦割", en: "Ritz Tile Breaking", zh: "Ritz 瓦片击破", ko: "리츠 기와 격파" },
+                email: "rizs_yuinoya@aaa.xxx.com",
+                label: { ja: "アクティビティ", en: "Activity", zh: "活动", ko: "액티비티" },
+                serviceName: {
+                    ja: "瓦割にチャレンジしよう！",
+                    en: "Challenge Tile Breaking!",
+                    zh: "挑战瓦片击破！",
+                    ko: "기와 격파에 도전하자!"
+                },
+                appeal: {
+                    ja: "武道・武術・格闘技で力試しやパフォーマンスとして行われてきた瓦割り。その瓦割りにチャレンジできるお店が「瓦割りカワラナ」です。精神統一して気合を入れ、瓦に向けて一撃を放つ。割り切った後の爽快感・達成感は他では体験できません。願掛け・開運・ストレス解消・SNS映えなど様々な目的でチャレンジすることができます。人生一度。浅草観光の記念に瓦割りを体験して行ってください！",
+                    en: "Tile breaking, performed as a test of strength in martial arts. 'Kawarana' is the shop where you can challenge this. Concentrate, shout, and strike the tiles. The exhilaration and sense of accomplishment are unique. Try it for wish-making, good luck, stress relief, or social media. Experience it as a memory of your Asakusa sightseeing!",
+                    zh: "瓦片击破是武道和格斗技中用于试力和表演的项目。在“Kawarana”您可以挑战瓦片击破。精神统一，大喝一声，向瓦片击出一击。击碎后的爽快感和成就感是独一无二的。为了许愿、开运、解压或社交媒体拍照，您可以出于各种目的进行挑战。人生只有一次，请作为浅草观光的纪念来体验吧！",
+                    ko: "무도·무술·격투기에서 힘 시험이나 퍼포먼스로 행해져 온 기와 격파. 그 기와 격파에 도전할 수 있는 가게가 '카와라나'입니다. 정신 통일하여 기합을 넣고 기와를 향해 일격을 날립니다. 다 깨뜨린 후의 상쾌함과 성취감은 타에서는 체험할 수 없습니다. 소원 성취, 개운, 스트레스 해소, SNS용 등 다양한 목적으로 도전할 수 있습니다. 인생 한 번. 아사쿠사 관광 기념으로 기와 격파를 체험하고 가세요!"
+                },
+                courses: [
+                    {
+                        id: "A",
+                        name: { ja: "Aコース（瓦割A）", en: "Course A (Tile Breaking A)", zh: "A套餐（瓦片A）", ko: "A코스 (기와 A)" },
+                        desc: { ja: "瓦割Aを体験できます", en: "Experience Tile Breaking A", zh: "体验瓦片A", ko: "기와 A를 체험할 수 있습니다" },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 6600,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.Aコース体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Course A Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.A套餐体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.A코스 체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    },
+                    {
+                        id: "B",
+                        name: { ja: "Bコース（瓦割B）", en: "Course B (Tile Breaking B)", zh: "B套餐（瓦片B）", ko: "B코스 (기와 B)" },
+                        desc: { ja: "瓦割Bを体験できます", en: "Experience Tile Breaking B", zh: "体验瓦片B", ko: "기와 B를 체험할 수 있습니다" },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 10000,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.Bコース体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Course B Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.B套餐体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.B코스 체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    },
+                    {
+                        id: "C",
+                        name: { ja: "Cコース（瓦割C）", en: "Course C (Tile Breaking C)", zh: "C套餐（瓦片C）", ko: "C코스 (기와 C)" },
+                        desc: { ja: "瓦割Cを体験できます", en: "Experience Tile Breaking C", zh: "体验瓦片C", ko: "기와 C를 체험할 수 있습니다" },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 15000,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.Cコース体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Course C Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.C套餐体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.C코스 체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    }
+                ]
+            },
+            {
+                id: 3,
+                image: "https://i.imgur.com/zda0Dj4.jpeg",
+                companyName: { ja: "リッツ茶道", en: "Ritz Tea Ceremony", zh: "Ritz 茶道", ko: "리츠 다도" },
+                email: "rizs_yuinoya@aaa.xxx.com",
+                label: { ja: "食", en: "Food/Culture", zh: "美食/文化", ko: "음식/문화" },
+                serviceName: {
+                    ja: "茶懐石料亭「南青山 即今」都会の隠れ家で体感するやさしいお茶の世界 −季節の一汁三菜ランチ付き−",
+                    en: "Tea Kaiseki Ryotei 'Minami Aoyama Sokkon': A Gentle World of Tea in an Urban Hideaway - with Seasonal Lunch",
+                    zh: "茶怀石料亭“南青山 即今” 在都市隐居处体验温柔的茶之世界 -附带季节的一汤三菜午餐-",
+                    ko: "차 가이세키 요정 '미나미아오야마 솟콘' 도심의 은신처에서 체감하는 부드러운 차의 세계 -계절의 일즙삼채 점심 포함-"
+                },
+                appeal: {
+                    ja: "興味があっても「作法が難しそう」と敬遠されがちな茶道の世界を、より身近に感じてもらうためのOtonami限定プラン。茶道宗和流 十八代・宇田川宗光氏監修の茶室にて、小間という4畳半の静謐な空間でたしなむ薄茶点前。そして茶懐石の基本となる一汁三菜のランチを味わいます。作法やマナーにとらわれすぎず、お茶のおいしさや茶室の雰囲気を心ゆくまで堪能。茶道の楽しさに触れることを重視した、茶道初心者にもやさしい入門編となるプランです。",
+                    en: "An Otonami exclusive plan to make the world of tea ceremony feel more accessible. In a tea room supervised by the 18th generation Sowa master, enjoy thin tea in a tranquil 4.5 tatami mat space. Then enjoy a lunch of 'Ichiju Sansai', the basis of tea kaiseki. Without worrying too much about manners, fully enjoy the taste of tea and the atmosphere. A beginner-friendly plan focusing on the joy of tea ceremony.",
+                    zh: "为了让大家觉得茶道世界更亲近而推出的Otonami限定计划。在茶道宗和流第十八代宇田川宗光先生监修的茶室里，在被称为小间的4叠半静谧空间里品尝薄茶点前。然后品尝作为茶怀石基础的一汤三菜午餐。不过分拘泥于礼法，尽情享受茶的美味和茶室的氛围。重视接触茶道乐趣，对茶道初学者也很友好的入门篇计划。",
+                    ko: "관심은 있어도 '예법이 어려울 것 같다'며 꺼리기 쉬운 다도의 세계를, 더 친근하게 느끼게 하기 위한 Otonami 한정 플랜. 다도 종화류 18대 우다가와 소코 씨 감수의 다실에서, 고마라고 불리는 4조 반의 정밀한 공간에서 즐기는 박차 점전. 그리고 차 가이세키의 기본이 되는 일즙삼채 런치. 예법이나 매너에 너무 얽매이지 않고, 차의 맛과 다실의 분위기를 마음껏 만끽. 다도의 즐거움을 접하는 것을 중시한, 다도 초보자에게도 상냥한 입문편 플랜입니다."
+                },
+                courses: [
+                    {
+                        id: "A",
+                        name: { ja: "茶道A", en: "Tea Ceremony A", zh: "茶道A", ko: "다도 A" },
+                        desc: { ja: "茶道Aを体験できます", en: "Experience Tea Ceremony A", zh: "体验茶道A", ko: "다도 A를 체험할 수 있습니다" },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 6600,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    },
+                    {
+                        id: "B",
+                        name: { ja: "茶道B", en: "Tea Ceremony B", zh: "茶道B", ko: "다도 B" },
+                        desc: { ja: "茶道Bを体験できます", en: "Experience Tea Ceremony B", zh: "体验茶道B", ko: "다도 B를 체험할 수 있습니다" },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 10000,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    },
+                    {
+                        id: "C",
+                        name: { ja: "茶道C", en: "Tea Ceremony C", zh: "茶道C", ko: "다도 C" },
+                        desc: { ja: "茶道Cを体験できます", en: "Experience Tea Ceremony C", zh: "体验茶道C", ko: "다도 C를 체험할 수 있습니다" },
+                        time: { ja: "1時間", en: "1 hour", zh: "1小时", ko: "1시간" },
+                        price: 15000,
+                        payment: { ja: "クレジット/Paypay", en: "Credit Card/PayPay", zh: "信用卡/PayPay", ko: "신용카드/PayPay" },
+                        flow: {
+                            ja: ["1.下記の連絡先までお問い合わせメールを送ってください。", "2.体験サービスの提供者から返信があります。", "3.参加日時や参加条件について調整をいたします。", "4.体験費用をお支払い", "5.現地に集合（体験開始の10分前にお集まりください）", "6.体験（約45分）", "7.試食（約15分）", "8.解散"],
+                            en: ["1. Send an inquiry email to the contact below.", "2. Reply from the service provider.", "3. Adjustment of participation date and conditions.", "4. Payment of experience fee.", "5. Meeting at the site (10 mins before start).", "6. Experience (approx. 45 mins).", "7. Tasting (approx. 15 mins).", "8. Dismissal."],
+                            zh: ["1.请发送咨询邮件至以下联系方式。", "2.服务提供商将进行回复。", "3.调整参加日期和条件。", "4.支付体验费用。", "5.在现场集合（请在开始前10分钟到达）。", "6.体验（约45分钟）。", "7.试吃（约15分钟）。", "8.解散。"],
+                            ko: ["1.아래 연락처로 문의 메일을 보내주세요.", "2.체험 서비스 제공자로부터 회신이 옵니다.", "3.참가 일시 및 참가 조건에 대해 조정합니다.", "4.체험 비용 지불.", "5.현지 집합 (체험 시작 10분 전에 모여주세요).", "6.체험 (약 45분).", "7.시식 (약 15분).", "8.해산."]
+                        },
+                        notes: { ja: "最大10名まで", en: "Max 10 people", zh: "最多10人", ko: "최대 10명까지" }
+                    }
+                ]
+            }
+        ];
+
+        // --- Icons (Internal SVG Definitions) ---
+        const IconComponents = {
+            Mail: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+            ),
+            Copy: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                </svg>
+            ),
+            Check: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M20 6 9 17l-5-5"/>
+                </svg>
+            ),
+            X: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                </svg>
+            ),
+            Clock: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+            ),
+            CreditCard: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
+                </svg>
+            ),
+            ArrowRight: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                </svg>
+            ),
+        };
+
+        const Icon = ({ name, className }) => {
+            const Component = IconComponents[name];
+            return Component ? <Component className={className} /> : null;
+        };
+
+        // --- Components ---
+
+        const LanguageSwitcher = ({ currentLang, setLang }) => {
+            const languages = [
+                { code: 'ja', label: '日本語' },
+                { code: 'en', label: 'English' },
+                { code: 'zh', label: '简体中文' },
+                { code: 'ko', label: '한국어' }
+            ];
+
+            return (
+                <div className="flex gap-2 bg-white/90 backdrop-blur rounded-full p-1 shadow-lg border border-brand-gold/30">
+                    {languages.map(lang => (
+                        <button
+                            key={lang.code}
+                            onClick={() => setLang(lang.code)}
+                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 ${
+                                currentLang === lang.code 
+                                ? 'bg-brand-red text-white shadow-md transform scale-105 border border-brand-red' 
+                                : 'text-gray-600 hover:text-brand-red bg-white border border-transparent'
+                            }`}
+                        >
+                            {lang.label}
+                        </button>
+                    ))}
+                </div>
+            );
+        };
+
+        const CopyButton = ({ text, label }) => {
+            const [copied, setCopied] = useState(false);
+
+            const handleCopy = () => {
+                navigator.clipboard.writeText(text).then(() => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                }).catch(err => {
+                    // Fallback
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                });
+            };
+
+            return (
+                <button 
+                    onClick={handleCopy}
+                    className="flex items-center gap-1 text-xs font-bold text-brand-gold hover:text-brand-red transition-colors border border-brand-gold/30 px-2 py-1 rounded hover:bg-brand-gold/10"
+                >
+                    {copied ? <Icon name="Check" className="w-3 h-3" /> : <Icon name="Copy" className="w-3 h-3" />}
+                    {copied ? "OK" : label}
+                </button>
+            );
+        };
+
+        const InquirySection = ({ service, lang }) => {
+            const [selectedCourseId, setSelectedCourseId] = useState(service.courses[0].id);
+            
+            const t = TRANSLATIONS[lang];
+            const currentCourse = service.courses.find(c => c.id === selectedCourseId);
+            const subjectText = `${service.serviceName[lang]} ${currentCourse.name[lang]}`;
+            
+            // 多言語テンプレートの適用
+            const bodyTemplate = t.inquiryTemplate.replace('{{courseName}}', currentCourse.name[lang]);
+
+            return (
+                <div className="bg-brand-cream/50 border border-brand-gold/30 rounded-xl p-6 mt-8">
+                    <h3 className="text-xl font-serif font-bold text-brand-red mb-4 flex items-center gap-2">
+                        <Icon name="Mail" className="w-5 h-5" />
+                        {t.inquiry}
+                    </h3>
+                    
+                    <p className="text-sm text-gray-600 mb-6">{t.copyInstruction}</p>
+
+                    <div className="mb-6">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+                            {t.selectCourse}
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {service.courses.map(course => (
+                                <button
+                                    key={course.id}
+                                    onClick={() => setSelectedCourseId(course.id)}
+                                    className={`px-4 py-2 rounded-lg text-sm transition-all ${
+                                        selectedCourseId === course.id
+                                        ? 'bg-brand-red text-white shadow-md'
+                                        : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-red'
+                                    }`}
+                                >
+                                    {course.name[lang]}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="group relative bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs font-bold text-gray-400 uppercase">{t.email}</span>
+                                <CopyButton text={service.email} label={t.copy} />
+                            </div>
+                            <div className="font-mono text-gray-800 break-all select-all">{service.email}</div>
+                        </div>
+
+                        <div className="group relative bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs font-bold text-gray-400 uppercase">{t.subject}</span>
+                                <CopyButton text={subjectText} label={t.copy} />
+                            </div>
+                            <div className="font-medium text-gray-800 select-all">{subjectText}</div>
+                        </div>
+
+                        <div className="group relative bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs font-bold text-gray-400 uppercase">{t.body}</span>
+                                <CopyButton text={bodyTemplate} label={t.copy} />
+                            </div>
+                            <textarea 
+                                readOnly
+                                className="w-full h-48 bg-gray-50 border-none resize-none text-sm font-mono text-gray-600 focus:ring-0 p-0"
+                                value={bodyTemplate}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ServiceModal = ({ service, lang, onClose }) => {
+            if (!service) return null;
+            const t = TRANSLATIONS[lang];
+
+            useEffect(() => {
+                const handleEsc = (e) => {
+                    if (e.key === 'Escape') onClose();
+                };
+                window.addEventListener('keydown', handleEsc);
+                return () => window.removeEventListener('keydown', handleEsc);
+            }, [onClose]);
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                    <div 
+                        className="absolute inset-0 bg-brand-dark/80 backdrop-blur-sm transition-opacity"
+                        onClick={onClose}
+                    ></div>
+                    <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-y-auto animate-slide-up flex flex-col">
+                        
+                        {/* Header Image */}
+                        <div className="relative h-48 sm:h-64 flex-shrink-0">
+                            <img 
+                                src={service.image} 
+                                alt={service.serviceName[lang]} 
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-brand-red/80 to-transparent mix-blend-multiply"></div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <button 
+                                onClick={onClose}
+                                className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 backdrop-blur text-white rounded-full p-2 transition-colors z-10"
+                            >
+                                <Icon name="X" className="w-6 h-6" />
+                            </button>
+                            <div className="absolute bottom-6 left-6 right-6 z-10">
+                                <span className="inline-block px-3 py-1 bg-brand-gold text-white text-xs font-bold rounded mb-2 tracking-wider shadow-sm">
+                                    {service.companyName[lang]}
+                                </span>
+                                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white leading-tight drop-shadow-md">
+                                    {service.serviceName[lang]}
+                                </h2>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 sm:p-10 space-y-10">
+                            
+                            {/* Appeal */}
+                            <section>
+                                <p className="text-gray-700 leading-relaxed text-lg border-l-4 border-brand-red pl-4">
+                                    {service.appeal[lang]}
+                                </p>
+                            </section>
+
+                            <hr className="border-brand-gold/20" />
+
+                            {/* Courses List */}
+                            <section>
+                                <h3 className="text-xl font-serif font-bold text-brand-red mb-6 flex items-center gap-2">
+                                    <span className="w-8 h-[1px] bg-brand-red"></span>
+                                    {t.courses}
+                                </h3>
+                                <div className="grid gap-6">
+                                    {service.courses.map(course => (
+                                        <div key={course.id} className="bg-brand-cream/30 rounded-xl p-6 border border-brand-gold/20 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2">
+                                                <h4 className="text-lg font-bold text-brand-dark">{course.name[lang]}</h4>
+                                                <span className="text-xl font-serif font-bold text-brand-red mt-2 sm:mt-0">
+                                                    {course.price.toLocaleString()}{t.yen} / {t.person}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-600 mb-4 text-sm">{course.desc[lang]}</p>
+                                            
+                                            <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                                                <div className="flex items-center gap-2 text-gray-500">
+                                                    <Icon name="Clock" className="w-4 h-4 text-brand-gold" />
+                                                    {t.requiredTime}: {course.time[lang]}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-gray-500">
+                                                    <Icon name="CreditCard" className="w-4 h-4 text-brand-gold" />
+                                                    {course.payment[lang]}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="mt-4 bg-white p-4 rounded-lg text-xs sm:text-sm text-gray-600 leading-6 border border-gray-100">
+                                                <strong className="block text-brand-gold mb-2">{t.flow}</strong>
+                                                <ul className="list-none space-y-1">
+                                                    {course.flow[lang].map((step, i) => (
+                                                        <li key={i}>{step}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                            <div className="mt-3 text-xs text-brand-red text-right font-medium">
+                                                {t.notes}: {course.notes[lang]}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <hr className="border-brand-gold/20" />
+
+                            {/* Inquiry Form */}
+                            <InquirySection service={service} lang={lang} />
+
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [lang, setLang] = useState('ja');
+            const [selectedService, setSelectedService] = useState(null);
+            
+            const t = TRANSLATIONS[lang];
+
+            return (
+                <div className="min-h-screen relative overflow-hidden flex flex-col">
+                    {/* Navigation */}
+                    <nav className="relative z-20 flex justify-between items-center px-6 py-6 max-w-7xl mx-auto w-full">
+                        <div className="flex items-center gap-3">
+                            <img src="https://i.imgur.com/wXrm9Fw.png" alt="Yuinoya Logo" className="h-10 w-auto" />
+                            <span className="text-xl font-serif font-bold tracking-widest text-brand-dark hidden sm:block">YUINOYA</span>
+                        </div>
+                        <LanguageSwitcher currentLang={lang} setLang={setLang} />
+                    </nav>
+
+                    {/* Hero Section */}
+                    <header className="relative z-10 hero-section text-white rounded-b-[3rem] sm:rounded-b-[4rem] shadow-2xl mb-16 mx-0 sm:mx-4">
+                        <div className="hero-pattern"></div>
+                        <div className="relative z-20 px-6 pt-24 pb-36 max-w-5xl mx-auto text-center">
+                            
+                            {/* Decorative Frame */}
+                            <div className="inline-block px-8 py-2 border border-[#FFD700]/60 rounded-full text-[#FFD700] text-xs font-bold tracking-[0.3em] mb-8 uppercase bg-black/30 backdrop-blur-sm animate-fade-in shadow-lg">
+                                Japan Premium Experience
+                            </div>
+
+                            <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold mb-8 leading-tight animate-fade-in text-shadow-hero tracking-wide">
+                                <span className="whitespace-pre-wrap">{t.mainCopy}</span>
+                            </h1>
+                            
+                            <p className="text-white/95 max-w-2xl mx-auto leading-relaxed text-base sm:text-lg mb-4 animate-slide-up whitespace-pre-wrap font-medium text-shadow-hero">
+                                {t.subCopy}
+                            </p>
+                        </div>
+                        
+                        {/* Decorative Gold Line */}
+                        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-brand-brightGold to-transparent rounded-full z-20"></div>
+                    </header>
+
+                    {/* Service Grid */}
+                    <main className="relative z-10 px-6 pb-24 max-w-7xl mx-auto w-full flex-grow">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {SERVICES_DATA.map((service) => (
+                                <div 
+                                    key={service.id}
+                                    onClick={() => setSelectedService(service)}
+                                    className="group relative h-[450px] rounded-2xl overflow-hidden cursor-pointer shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl border border-brand-gold/10 bg-brand-white"
+                                >
+                                    {/* Image */}
+                                    <div className="absolute inset-0 h-[65%] overflow-hidden">
+                                        <img 
+                                            src={service.image} 
+                                            alt={service.serviceName[lang]} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/80 to-transparent opacity-60"></div>
+                                    </div>
+                                    
+                                    {/* Content Card */}
+                                    <div className="absolute bottom-0 left-0 right-0 h-[35%] bg-white p-6 flex flex-col justify-between">
+                                        <div>
+                                            <div className="text-brand-red text-xs font-bold tracking-widest uppercase mb-2">
+                                                {service.label[lang]}
+                                            </div>
+                                            <h3 className="text-lg font-serif font-bold text-brand-dark leading-snug line-clamp-2 group-hover:text-brand-red transition-colors">
+                                                {service.serviceName[lang]}
+                                            </h3>
+                                        </div>
+                                        <div className="flex justify-between items-end mt-2">
+                                            <span className="text-xs text-gray-400 font-medium">{service.companyName[lang]}</span>
+                                            <span className="inline-flex items-center gap-1 text-brand-gold text-xs font-bold border-b border-brand-gold/30 pb-0.5 group-hover:border-brand-gold transition-colors">
+                                                {t.viewDetails} <Icon name="ArrowRight" className="w-3 h-3" />
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Floating Label overlay on image */}
+                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-xs font-bold text-brand-dark shadow-sm">
+                                        RECOMMENDED
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="relative z-10 text-center py-10 text-xs text-gray-500 border-t border-brand-gold/20 bg-brand-cream">
+                        <div className="mb-4">
+                             <span className="text-lg font-serif font-bold text-brand-red tracking-widest">YUINOYA</span>
+                        </div>
+                        &copy; 2026 YUINOYA Brand by Ritz. All rights reserved.
+                    </footer>
+
+                    {/* Detail Modal */}
+                    {selectedService && (
+                        <ServiceModal 
+                            service={selectedService} 
+                            lang={lang} 
+                            onClose={() => setSelectedService(null)} 
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
